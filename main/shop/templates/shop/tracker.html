@@ -1,0 +1,122 @@
+{% extends 'shop/basic.html' %} 
+
+{% block title %}Checkout{% endblock %} 
+{% block addon-body %}
+<span id="alert-banner"></span>
+<div class="container" style="max-width: 65%">
+  <div class="col my-3">
+    <h1 class="text-justify">My Awesome Cart- Tracker</h1>
+    <hr />
+    <form method="post" action="#" id="trackerform">
+      {% csrf_token %}
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="orderId">Order No.</label>
+          <input
+            type="text"
+            name="orderId"
+            class="form-control"
+            id="orderId"
+            placeholder="order ID"
+          />
+        </div>
+        <div class="form-group col-md-6">
+          <label for="inputemail">Email</label>
+          <input
+            type="email"
+            name="email"
+            class="form-control"
+            id="inputemail"
+            placeholder="Email"
+          />
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">Checkout</button>
+    </form>
+  </div>
+  <div class="col my-3">
+    <h1 class="text-justify">My Awesome Cart- Your Order Status</h1>
+    <hr />
+    <ul class="list-group" id="items"></ul>
+  </div>
+  <div class="col my-3">
+    <h1 class="text-justify">My Awesome Cart- Your Ordered Items</h1>
+    <hr />
+    <ul class="list-group" id="ordered-items"></ul>
+  </div>
+</div>
+
+{% endblock addon-body %} 
+
+{% block jss %}
+<script>
+  $("#trackerform").submit(function (event) {
+    $("#items").empty();
+    var formData = {
+      orderId: $("input[name=orderId]").val(),
+      email: $("input[name=email]").val(),
+      csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+    };
+
+    $.ajax({
+      type: "POST",
+      url: "/shop/tracker/",
+      data: formData,
+      encode: true,
+    })
+    .done(function (data) {
+      {% comment %} /* Our list was appending the data every time user requested for it, thereby,
+         showing duplicate data on our webpage. This was happening cause we didn't emptied our already passed on
+         list in the {#ordered-item}
+      */ {% endcomment %}
+  	  $("#ordered-items").empty()
+      //{% comment %} console.log(data); {% endcomment %}
+      data = JSON.parse(data);
+      if (data["status"] == "success") {
+        updates = data["updates"];
+        console.log(data["itemsJson"]);
+        for (i = 0; i < updates.length; i++) {
+          let text = updates[i]["text"];
+          let time = updates[i]["time"];
+          mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    ${text}
+                  <span class="badge badge-primary badge-pill">${time}</span>
+                  </li>`;
+          $("#items").append(mystr);
+          document.getElementById("alert-banner").innerHTML = `
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+              <strong>Result Found!</strong> Displaying data below. 
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          `;
+        }
+
+        cart = JSON.parse(data["itemsJson"]);
+        console.log(cart);
+        for (var item in cart) {
+          let name = cart[item][1];
+          let qty = cart[item][0];
+          orderedstr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+            ${name}        
+        <span class="badge badge-primary badge-pill">${qty}</span>
+      </li>`;
+
+          $("#ordered-items").append(orderedstr);
+        }
+      }
+       else {
+        mystr = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
+              <strong>No result found!</strong> Please check the details. 
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+              </button>
+          </div>`;
+        document.getElementById("alert-banner").innerHTML = mystr;
+      }
+    });
+    event.preventDefault();
+  });
+</script>
+{% endblock jss %}

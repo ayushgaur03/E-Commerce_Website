@@ -1,0 +1,74 @@
+{% extends 'shop/basic.html' %} {% block title %}{{item.product_name}}-
+MyAwesome Cart{% endblock %} {% block addon-body %}
+
+<div class="container">
+  <div class="row mt-3">
+    <div class="col-md-4">
+      <div class="row" style="width:100%">
+        <img class="py-3"  style="margin-left:-120px" src="/media/{{item.image}}" width="500px" height="450px" alt="image">
+      </div>
+    </div>
+
+    <div class="col-md-8 ">
+      <h1>{{item.product_name}}</h1>
+      <hr>
+      <p>{{item.desc}}</p>
+      <br>
+      <br>
+      <h5>Rs. {{item.price}}</h5>
+        <div class="row mt-5">
+        <button class="btn btn-primary mx-1">Add To Cart</button>
+        <button class="btn btn-primary mx-1">Buy Now</button>
+        </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock addon-body %}
+
+{% block jss %}
+<script>
+    console.log("working");
+    if (localStorage.getItem("cart") == null) {
+      var cart = {};
+    }
+    else {
+      let count=0;
+      cart = JSON.parse(localStorage.getItem("cart"));
+
+      {% comment %}
+      //Object.entries() takes an object and returns it as array which is then by use of map used to find the
+      //key and value. Now, here entry[1] resembles value and entry[0] the key value of map entry.
+      {% endcomment %}
+
+      Object.entries(cart).map(entry => {
+  	  let value = entry[1];
+  	  count+=value;
+  });
+      document.getElementById("cart").innerHTML = count;
+      {% comment %}
+      Object.keys(cart).length;
+      //<!-- The above code is useful for just telling the different product added but not the exact quantity as
+      // user may have wanted to purchase 2 or quantities of same product.-->
+      {% endcomment %}
+    }
+    $(".cart-add").click(function () {
+      console.log("clicked");
+      var idstr = this.id.toString();
+      console.log(idstr);
+      if (cart[idstr] != undefined) {
+        cart[idstr] = cart[idstr] + 1;
+      } else {
+        cart[idstr] = 1;
+      }
+      console.log(cart);
+      localStorage.setItem("cart", JSON.stringify(cart));
+    });
+    $("#popover").popover();
+
+    document
+      .getElementById("popover")
+      .setAttribute("data-content", `<h5>HTML</h5>`);
+</script>
+{% endblock jss %}

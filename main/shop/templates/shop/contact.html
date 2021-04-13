@@ -1,0 +1,102 @@
+{% extends 'shop/basic.html' %} 
+{% block title %}Contact Us{% endblock %} 
+
+{% block addon-body %}
+<div class="msg"></div>
+<div class="container my-3">
+  <h1 class="display-3 text-center">Contact Us</h1>
+  <hr />
+  <form method="post" action="/shop/contact/">
+  {% csrf_token %}
+    <div class="form-group">
+      <label for="name">Name</label>
+      <input
+        type="text"
+        class="form-control"
+        id="name"
+        name="name"
+        placeholder="Enter your Name"
+      />
+    </div>
+    <div class="form-group">
+      <label for="email">Email address</label>
+      <input
+        type="email"
+        class="form-control"
+        id="email"
+        name="email"
+        placeholder="Enter your email"
+      />
+    </div>
+    <div class="form-group">
+      <label for="phone">Phone Number</label>
+      <input
+        type="tel"
+        class="form-control"
+        id="phone"
+        name="phone"
+        placeholder="Enter your number"
+      />
+    </div>
+    <div class="form-group">
+      <label for="text">How can we help you today??</label>
+      <textarea
+        class="form-control"
+        id="text"
+        name="text"
+        rows="3"
+        placeholder="Describe your problem here"
+      ></textarea>
+    </div>
+    <button type="submit" id="submit" class="btn btn-outline-success btn-lg btn-block">
+      Block level button
+    </button>
+  </form>
+</div>
+{% endblock addon-body %}
+
+{% block jss %}
+<script>
+    console.log("working");
+    if (localStorage.getItem("cart") == null) {
+      var cart = {};
+    }
+    else {
+      let count=0;
+      cart = JSON.parse(localStorage.getItem("cart"));
+
+      {% comment %}
+      //Object.entries() takes an object and returns it as array which is then by use of map used to find the
+      //key and value. Now, here entry[1] resembles value and entry[0] the key value of map entry.
+      {% endcomment %}
+
+      Object.entries(cart).map(entry => {
+  	  let value = entry[1];
+  	  count+=value;
+  });
+      document.getElementById("cart").innerHTML = count;
+      {% comment %}
+      Object.keys(cart).length;
+      //<!-- The above code is useful for just telling the different product added but not the exact quantity as
+      // user may have wanted to purchase 2 or quantities of same product.-->
+      {% endcomment %}
+    }
+    $(".cart-add").click(function () {
+      console.log("clicked");
+      var idstr = this.id.toString();
+      console.log(idstr);
+      if (cart[idstr] != undefined) {
+        cart[idstr] = cart[idstr] + 1;
+      } else {
+        cart[idstr] = 1;
+      }
+      console.log(cart);
+      localStorage.setItem("cart", JSON.stringify(cart));
+    });
+    $("#popover").popover();
+
+    document
+      .getElementById("popover")
+      .setAttribute("data-content", `<h5>HTML</h5>`);
+</script>
+{% endblock jss %}
